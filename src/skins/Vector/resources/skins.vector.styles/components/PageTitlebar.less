@@ -1,0 +1,31 @@
+.vector-page-titlebar {
+	display: flex;
+
+	// Ensure language button or indicators are positioned to the right even when the title is hidden
+	justify-content: flex-end;
+	// Use box-shadow instead of border to allow border collapsing between titlebar and toolbar
+	box-shadow: 0 1px @border-color-base;
+	align-items: center;
+
+	&-blank {
+		box-shadow: none;
+	}
+
+	.firstHeading {
+		flex-grow: 1;
+		border: 0;
+	}
+
+	.vector-page-titlebar-toc {
+		&.ve-active {
+			display: none !important; /* stylelint-disable-line declaration-no-important */
+		}
+
+		.vector-menu-heading {
+			// Override the default button styles so the ToC button is slightly shorter when collapsed into the page title
+			@media ( max-width: @max-width-tablet ) {
+				padding: 7px 12px;
+			}
+		}
+	}
+}
