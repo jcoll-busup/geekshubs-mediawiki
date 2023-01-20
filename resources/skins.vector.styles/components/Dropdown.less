@@ -1,0 +1,55 @@
+@import '../../common/variables.less';
+@import '../../common/mixins.less';
+@import 'mediawiki.mixins.less';
+
+/**
+ * Targets all dropdown labels.
+ * - language variants, Actions menus
+ * - more menu, user menu
+ * - ULS button in sticky header
+ */
+.vector-dropdown > .vector-menu-heading {
+	display: flex;
+
+	&:after {
+		.mixin-vector-menu-heading-arrow();
+	}
+}
+
+/**
+ * Dropdown container
+ */
+.vector-dropdown {
+	> .vector-menu-content {
+		background-color: @background-color-base;
+		border: @border-width-base @border-style-base @border-color-base;
+		box-shadow: 0 1px 1px 0 rgba( 0, 0, 0, 0.1 );
+		transition-property: opacity;
+		transition-duration: @transition-duration-base;
+
+		.vector-feature-page-tools-disabled & {
+			// The menu content should not be narrower than the menu button.
+			min-width: 100%;
+		}
+
+		.vector-feature-page-tools-enabled & {
+			// TODO Add consistent min/max values for dropdowns in T316055
+			width: max-content;
+			max-width: 200px;
+		}
+	}
+}
+
+/**
+ * Dropdown menu items.
+ */
+.vector-dropdown .mw-list-item {
+	a {
+		.mixin-vector-dropdown-menu-item();
+		color: @color-link;
+
+		.vector-feature-page-tools-disabled & {
+			.mixin-vector-dropdown-menu-item-deprecated();
+		}
+	}
+}
