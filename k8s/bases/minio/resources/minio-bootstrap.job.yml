@@ -1,0 +1,54 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: minio-bootstrap-job
+spec:
+  template:
+    spec:
+      initContainers:
+        - name: minio-service-probe
+          image: busybox:latest
+          command: ["sh", "-c"]
+          args:
+          - until nc -vz minio.mediawiki:9000; do echo "Waiting for minio..."; sleep 1; done;
+      containers:
+        - name: minio-bootstrap
+          image: minio/mc:latest
+          command: ['bash', '-c']
+          args:
+          - mc alias set local http://minio.mediawiki:9000 ${MINIO_ROOT_USER} ${MINIO_ROOT_PASSWORD}
+            && mc admin user svcacct add --access-key ${LOCAL_ACCESS_KEY} --secret-key ${LOCAL_SECRET_KEY} local ${MINIO_ROOT_USER}
+            && mc mb local/config-files
+            && mc mb local/uploads 
+          env:
+          - name: MINIO_ROOT_USER
+            valueFrom:
+              configMapKeyRef:
+                name: minio-environment
+                key: MINIO_ROOT_USER
+          - name: MINIO_ROOT_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: minio-secrets
+                key: root.password
+          - name: LOCAL_ACCESS_KEY
+            valueFrom:
+              configMapKeyRef:
+                name: minio-environment
+                key: LOCAL_ACCESS_KEY
+          - name: LOCAL_SECRET_KEY
+            valueFrom:
+              secretKeyRef:
+                name: minio-secrets
+                key: local.secret_key
+          #image: mediawiki-backend:latest
+          #command: ["/usr/local/lib/deployment/bootstrap.sh"]
+          #volumeMounts:
+          #  - name: bootstrap-scripts
+          #    mountPath: "/usr/local/lib/deployment"
+      #volumes:
+      #  - name: bootstrap-scripts
+      #    configMap:
+      #      name: deployment-helper-scripts
+      #      defaultMode: 0500
+      restartPolicy: Never

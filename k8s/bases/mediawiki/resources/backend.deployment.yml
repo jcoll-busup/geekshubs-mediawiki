@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+spec:
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      containers:
+      - name: mediawiki-backend
+        image: mediawiki-backend:latest
+        ports:
+        - name: php-fpm
+          containerPort: 9000
+        resources:
+          limits:
+            cpu: "0"
+            memory: "0"
+        envFrom:
+        - configMapRef:
+            name: mediawiki-config

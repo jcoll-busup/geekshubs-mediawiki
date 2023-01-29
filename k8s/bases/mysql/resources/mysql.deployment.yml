@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mysql
+spec:
+  selector:
+    matchLabels:
+      app: mysql
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: mysql
+    spec:
+      containers:
+      - name: mysql
+        image: mysql:8.0.32-oracle
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mysql-secrets
+              key: root.password
+        ports:
+        - containerPort: 3306
+          name: mysql
+        resources:
+          limits:
+            cpu: "0"
+            memory: "0"
+        readinessProbe:
+          # Service is ready as soon as it starts accepting connections in the TCP port
+          exec:
+            command: ["sh", "-c"]
+            args:
+            - mysql -h 127.0.0.1 -u root -p${MYSQL_ROOT_PASSWORD} -e "SELECT CURRENT_TIMESTAMP;" &> /dev/null
+          initialDelaySeconds: 5
+          periodSeconds: 2
+          timeoutSeconds: 1
+        livenessProbe:
+          exec:
+            command: ["sh", "-c"]
+            args:
+            - mysqladmin -u root -p${MYSQL_ROOT_PASSWORD} ping &> /dev/null
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5

@@ -1,0 +1,14 @@
+resources:
+- resources/minio.deployment.yml
+- resources/minio.service.yml
+#- resources/minio-bootstrap.job.yml
+
+configMapGenerator:
+- name: minio-environment
+  envs:
+  - configs/minio.env
+
+secretGenerator:
+- name: minio-secrets
+  envs:
+  - secrets/minio.properties

@@ -1,0 +1,8 @@
+resources:
+- resources/mysql.deployment.yml
+- resources/mysql.service.yml
+
+secretGenerator:
+- name: mysql-secrets
+  envs:
+  - secrets/mysql.properties

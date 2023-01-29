@@ -1,0 +1,6 @@
+namespace: mediawiki
+
+bases:
+- ../../bases/minio
+- ../../bases/mysql
+- ../../bases/mediawiki

@@ -1,0 +1,22 @@
+resources:
+- resources/namespace.yml
+- resources/bootstrap.job.yml
+- resources/backend.deployment.yml
+- resources/backend.service.yml
+- resources/frontend.deployment.yml
+- resources/frontend.service.yml
+
+configMapGenerator:
+- name: mediawiki-environment
+  envs:
+  - configs/mediawiki.env
+- name: bootstrap-scripts
+  files:
+  - configs/bootstrap-scripts.d/bootstrap.sh
+#  - configs/bootstrap-scripts.d/upload.sh
+  - configs/bootstrap-scripts.d/setup-minio.sh
+
+secretGenerator:
+- name: mediawiki-secrets
+  envs:
+  - secrets/mediawiki.properties

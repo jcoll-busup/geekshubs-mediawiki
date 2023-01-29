@@ -1,0 +1,81 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: minio
+spec: 
+  selector:
+    matchLabels:
+      app: minio
+  template:
+    metadata:
+      labels:
+        app: minio
+    spec:
+      containers:
+      - name: minio
+        image: minio/minio
+        command: ["minio"]
+        args: ["server", "--console-address", ":9090", "/data"]
+        envFrom:
+        - configMapRef:
+            name: minio-environment
+        env:
+        - name: MINIO_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: minio-secrets
+              key: root.password
+        ports:
+        - name: api
+          containerPort: 9000
+        - name: console
+          containerPort: 9090
+        resources:
+          limits:
+            cpu: "0"
+            memory: "0"
+        readinessProbe:
+          httpGet:
+            path: /minio/health/live
+            port: 9000
+        livenessProbe:
+          httpGet:
+            path: /minio/health/live
+            port: 9000
+#        volumeMounts:
+#        - name: minio-data
+#          mountPath: /data
+#      volumes:
+#      - name: minio-data
+#        persistentVolumeClaim:
+#          claimName: minio-data
+#      - name: mc
+#        image: minio/mc
+#        command: ["sleep", "3600"]
+        #- bash
+        #- -c
+        #- mc admin user add local ${LOCAL_ACCESS_KEY} ${LOCAL_SECRET_KEY}
+#        envFrom:
+#        - configMapRef:
+#            name: minio-environment
+#        env:
+#        - name: MINIO_ROOT_PASSWORD
+#          valueFrom:
+#            secretKeyRef:
+#              name: minio-passwd-root
+#              key: password
+#        - name: LOCAL_SECRET_KEY
+#          valueFrom:
+#            secretKeyRef:
+#              name: minio-secret-key-local
+#              key: secret_key
+#        resources:
+#          limits:
+#            cpu: "0"
+#            memory: "0"
+#        readinessProbe:
+#          exec:
+#            command:
+#            - bash
+#            - -c
+#            - mc alias set local http://localhost:9000 ${MINIO_ROOT_USER} ${MINIO_ROOT_PASSWORD}

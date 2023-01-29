@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+spec:
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      containers:
+      - name: httpd
+        image: httpd:2.4.55-alpine3.17
+        ports:
+        - name: web
+          containerPort: 80
+        resources:
+          limits:
+            cpu: "0"
+            memory: "0"

@@ -1,0 +1,93 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: bootstrap-job
+spec:
+  template:
+    spec:
+      initContainers:
+        - name: minio-service-probe
+          image: busybox:1.36-glibc
+          command: ["sh", "-c"]
+          args:
+          - until nc -vz ${MINIO_HOST}:${MINIO_PORT}; do echo "Waiting for minio..."; sleep 1; done;
+          envFrom:
+          - configMapRef:
+              name: mediawiki-environment
+        - name: minio-service-setup
+          image: bitnami/minio-client:2023-debian-11
+          #command: ["/usr/local/lib/bootstrap/setup-minio.sh"]
+          command: ["sleep", "3600"]
+          volumeMounts:
+          - name: bootstrap
+            mountPath: "/usr/local/lib/bootstrap"
+          - name: mc
+            mountPath: "/.mc"
+          envFrom:
+          - configMapRef:
+              name: mediawiki-environment
+          env:
+          - name: MINIO_ROOT_USER
+            valueFrom:
+              configMapKeyRef:
+                name: minio-environment
+                key: MINIO_ROOT_USER
+          - name: MINIO_ROOT_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: minio-secrets
+                key: root.password
+          - name: MINIO_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: mediawiki-secrets
+                key: minio.password
+          - name: MINIO_SECRET_KEY
+            valueFrom:
+              secretKeyRef:
+                name: mediawiki-secrets
+                key: minio.secret_key
+        - name: mysql-service-probe
+          image: busybox:latest
+          command: ["sh", "-c"]
+          args:
+          - until nc -vz ${MYSQL_HOST}:${MYSQL_PORT}; do echo "Waiting for mysql..."; sleep 1; done;
+          envFrom:
+          - configMapRef:
+              name: mediawiki-environment
+      containers:
+        - name: backend-bootstrap
+          image: mediawiki-backend:latest
+          command: ["/usr/local/lib/deployment/bootstrap.sh"]
+          envFrom:
+            - configMapRef:
+                name: mediawiki-environment
+          env:
+          - name: MYSQL_ROOT_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: mysql-secrets
+                key: root.password
+          - name: MYSQL_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: mediawiki-secrets
+                key: mysql.password
+          - name: WIKI_ADMIN_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: mediawiki-secrets
+                key: admin.password
+          volumeMounts:
+            - name: bootstrap
+              mountPath: "/usr/local/lib/bootstrap"
+      volumes:
+        - name: bootstrap
+          configMap:
+            name: bootstrap-scripts
+            defaultMode: 0555
+        - name: mc
+          emptyDir:
+      restartPolicy: Never
+
+# php maintenance/install.php --dbname=mediawiki --dbserver="mysql.mediawiki" --installdbuser=root --installdbpass=bluemark49 --dbuser=mwuser --dbpass=noisygiraffe10 --server="http://localhost" --scriptpath=/ --lang=en --pass=notasecretanymore "My Wiki" "Admin"
