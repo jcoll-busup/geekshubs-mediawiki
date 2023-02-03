@@ -1,8 +1,19 @@
 docker_build(
+    'mediawiki-bootstrap',
+    context='./',
+    dockerfile='./docker/bootstrap/Dockerfile',
+    only=['./docker/bootstrap'],
+    live_update=[
+        sync('./docker/bootstrap/', '/usr/local/lib/bootstrap/')
+    ],
+)
+
+docker_build(
     'mediawiki-backend',
     context='./',
     dockerfile='./docker/backend/Dockerfile',
-    target='build-image'
+    target='build-image',
+    only=['./src/'],
 )
 
 k8s_yaml(kustomize('k8s/overlays/development'))

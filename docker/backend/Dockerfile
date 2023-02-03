@@ -11,8 +11,6 @@ FROM php:8.1-fpm-alpine3.17 as base-image
 #
 FROM base-image AS provision-image
 
-WORKDIR /srv/mediawiki
-
 RUN <<RUNCMD
 # Abort upon encountering any error
 set -eux
@@ -30,13 +28,15 @@ NUM_COMPILER_THREADS=$(grep -c ^processor /proc/cpuinfo 2> /dev/null || 1) \
 apk del freetype-dev icu-dev libjpeg-turbo-dev libpng-dev zlib-dev
 RUNCMD
 
+WORKDIR /srv/mediawiki
+
 
 # ==============================================================================
 # Build stage
 #
 FROM provision-image as build-image
 
-ENV COMPOSER_ALLOW_SUPERUSER=1
+ARG COMPOSER_ALLOW_SUPERUSER=1
 
 RUN <<RUNCMD
 # Abort upon encountering any error

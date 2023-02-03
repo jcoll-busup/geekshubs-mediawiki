@@ -15,12 +15,10 @@ spec:
           - configMapRef:
               name: mediawiki-environment
         - name: minio-service-setup
-          image: bitnami/minio-client:2023-debian-11
+          image: mediawiki-bootstrap
           #command: ["/usr/local/lib/bootstrap/setup-minio.sh"]
           command: ["sleep", "3600"]
           volumeMounts:
-          - name: bootstrap
-            mountPath: "/usr/local/lib/bootstrap"
           - name: mc
             mountPath: "/.mc"
           envFrom:
@@ -58,7 +56,8 @@ spec:
       containers:
         - name: backend-bootstrap
           image: mediawiki-backend:latest
-          command: ["/usr/local/lib/deployment/bootstrap.sh"]
+          #command: ["/usr/local/lib/deployment/bootstrap.sh"]
+          command: ["sleep", "3600"]
           envFrom:
             - configMapRef:
                 name: mediawiki-environment
@@ -82,10 +81,6 @@ spec:
             - name: bootstrap
               mountPath: "/usr/local/lib/bootstrap"
       volumes:
-        - name: bootstrap
-          configMap:
-            name: bootstrap-scripts
-            defaultMode: 0555
         - name: mc
           emptyDir:
       restartPolicy: Never
